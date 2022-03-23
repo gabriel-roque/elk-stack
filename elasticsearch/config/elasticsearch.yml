@@ -2,5 +2,7 @@ cluster.name: "docker-cluster"
 network.host: 0.0.0.0
 
 xpack.security.enabled: true
+# xpack.security.enrollment.enabled: true
 xpack.security.authc.api_key.enabled: true
-xpack.license.self_generated.type: basic
+# xpack.license.self_generated.type: basic
+# xpack.security.transport.ssl.enabled: false
