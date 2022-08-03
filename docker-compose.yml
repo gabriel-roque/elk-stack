@@ -22,7 +22,7 @@ services:
         - elasticsearch-data:/usr/share/elasticsearch/data
         - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       environment:
-        - xpack.monitoring.enabled=true
+        - xpack.monitoring.templates.enabled=true
         - xpack.watcher.enabled=false
         - "ES_JAVA_OPTS=-Xms1800m -Xmx1800m"
         - discovery.type=single-node
@@ -56,34 +56,34 @@ services:
         - frontend
         - backend
 
-    logstash:
-      restart: always
-      build:
-        context: logstash/
-        args:
-          - ELK_VERSION=${ELK_VERSION}
-      volumes:
-          - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
-          - ./logstash/pipeline/:/usr/share/logstash/pipeline/
-      ports:
-        - "5044:5044"
-        - "5000:5000/tcp"
-        - "5000:5000/udp"
-        - "9600:9600"
-      environment:
-        LS_JAVA_OPTS: "-Xmx600m -Xms600m"
-        ELASTIC_PASSWORD: ${ELASTICSEARCH_PASSWORD}
-      networks:
-        - frontend
-        - backend
-      depends_on:
-        - elasticsearch
+    # logstash:
+    #   restart: always
+    #   build:
+    #     context: logstash/
+    #     args:
+    #       - ELK_VERSION=${ELK_VERSION}
+    #   volumes:
+    #       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+    #       - ./logstash/pipeline/:/usr/share/logstash/pipeline/
+    #   ports:
+    #     - "5044:5044"
+    #     - "5000:5000/tcp"
+    #     - "5000:5000/udp"
+    #     - "9600:9600"
+    #   environment:
+    #     LS_JAVA_OPTS: "-Xmx600m -Xms600m"
+    #     ELASTIC_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+    #   networks:
+    #     - frontend
+    #     - backend
+    #   depends_on:
+    #     - elasticsearch
     
     apm-server:
       build:
         context: apm/
         args:
-          - ELK_VERSION=${ELK_VERSION}     
+          - ELK_VERSION=${ELK_VERSION}
       environment:
         ELASTIC_PASSWORD: ${ELASTICSEARCH_PASSWORD}
       ports:
@@ -94,39 +94,39 @@ services:
       networks:
         - frontend
         - backend
-    nginx:
-      container_name: nginx
-      image: nginx:stable
-      restart: always
-      depends_on:
-        - certbot
-      volumes:
-        - ./nginx/sites/:/etc/nginx/conf.d/:ro
-        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-        - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
-        - ./nginx/conf/:/etc/nginx/conf
-        - ${VOLUME_PATH}/nginx/logs/:/var/log/nginx
-        - ${VOLUME_PATH}/certbot/www:/var/www/certbot/:ro
-        - ${VOLUME_PATH}/certbot/conf/:/etc/nginx/ssl/:ro
-      ports:
-        - 80:80
-        - 443:443
-      networks:
-        - frontend
-        - backend
+#     nginx:
+#       container_name: nginx
+#       image: nginx:stable
+#       restart: always
+#       depends_on:
+#         - certbot
+#       volumes:
+#         - ./nginx/sites/:/etc/nginx/conf.d/:ro
+#         - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#         - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+#         - ./nginx/conf/:/etc/nginx/conf
+#         - ${VOLUME_PATH}/nginx/logs/:/var/log/nginx
+#         - ${VOLUME_PATH}/certbot/www:/var/www/certbot/:ro
+#         - ${VOLUME_PATH}/certbot/conf/:/etc/nginx/ssl/:ro
+#       ports:
+#         - 80:80
+#         - 443:443
+#       networks:
+#         - frontend
+#         - backend
 
-    ### CERTBOT ##################################
+#     ### CERTBOT ##################################
 
-# Exemplo de comando para rodas os certificados:
-# docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --email exemplo@examplo.com -d example.org
-# docker-compose run --rm certbot renew
+# # Exemplo de comando para rodas os certificados:
+# # docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --email exemplo@examplo.com -d example.org
+# # docker-compose run --rm certbot renew
 
-    certbot:
-      container_name: certbot
-      image: certbot/certbot:latest
-      volumes:
-        - ${VOLUME_PATH}/certbot/www/:/var/www/certbot/:rw
-        - ${VOLUME_PATH}/certbot/conf/:/etc/letsencrypt/:rw
-      networks:
-        - frontend
-        - backend
+#     certbot:
+#       container_name: certbot
+#       image: certbot/certbot:latest
+#       volumes:
+#         - ${VOLUME_PATH}/certbot/www/:/var/www/certbot/:rw
+#         - ${VOLUME_PATH}/certbot/conf/:/etc/letsencrypt/:rw
+#       networks:
+#         - frontend
+#         - backend
